@@ -22,6 +22,16 @@ class UserService extends Service {
       return null;
     }
   }
+
+  async editUserInfo(params) {
+    const { app } = this;
+    try {
+      return await app.mysql.update("user", params, { id: params.id });
+    } catch (error) {
+      console.log("UserService>editUserInfo 错误", error);
+      return null;
+    }
+  }
 }
 
 module.exports = UserService;

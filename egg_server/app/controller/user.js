@@ -95,6 +95,77 @@ class UserController extends Controller {
       data: { token },
     };
   }
+
+  async getUserInfo() {
+    const { ctx, app } = this;
+    const decode = app.jwt.verify(
+      ctx.request.header.authorization,
+      app.config.jwt.secret
+    );
+
+    try {
+      const userInfo = await ctx.service.user.getUserByName(decode.username);
+      if (userInfo.id) {
+        ctx.body = {
+          code: 200,
+          msg: "获取成功",
+          data: {
+            id: userInfo.id,
+            username: userInfo.username,
+            signature: userInfo.signature || "",
+            avatar: userInfo.avatar || defaultAvatar,
+          },
+        };
+      } else {
+        ctx.body = {
+          code: 500,
+          msg: "用户不存在",
+          data: null,
+        };
+      }
+    } catch (error) {
+      ctx.body = {
+        code: 500,
+        msg: "系统错误",
+        data: null,
+      };
+    }
+  }
+
+  async editUserInfo() {
+    const { ctx, app } = this;
+    const { signature = "", avatar = "" } = ctx.request.body;
+    try {
+      const decode = app.jwt.verify(
+        ctx.request.header.authorization,
+        app.config.jwt.secret
+      );
+      if (!decode) return;
+      const userInfo = await ctx.service.user.getUserByName(decode.username);
+      await ctx.service.user.editUserInfo({
+        ...userInfo,
+        signature,
+        avatar,
+      });
+
+      ctx.body = {
+        code: 200,
+        msg: "请求成功",
+        data: {
+          id: userInfo.id,
+          signature,
+          username: userInfo.username,
+          avatar,
+        },
+      };
+    } catch (error) {
+      ctx.body = {
+        code: 500,
+        msg: "修改失败",
+        data: null,
+      };
+    }
+  }
 }
 
 module.exports = UserController;

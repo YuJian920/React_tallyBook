@@ -3,7 +3,7 @@
 module.exports = (secret) => {
   return async (ctx, next) => {
     const token = ctx.request.header.authorization;
-    const decode = "";
+    let decode = "";
     if (token != null && token) {
       try {
         decode = ctx.app.jwt.verify(token, secret);
